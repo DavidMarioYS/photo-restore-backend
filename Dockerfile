@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y \
 # Salin file requirements terlebih dahulu untuk optimasi cache Docker
 COPY requirements.txt .
 
+# Perbarui pip dan setuptools agar kompatibel dengan paket lama
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
 # Install semua pustaka Python
 RUN pip install --no-cache-dir -r requirements.txt
 
