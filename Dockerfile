@@ -1,10 +1,8 @@
-# Gunakan versi Python 3.10 yang ringan sebagai dasar
 FROM python:3.11-slim
 
-# Tentukan direktori kerja di dalam container
 WORKDIR /app
 
-# Install dependensi sistem operasi (wajib untuk OpenCV dan manipulasi gambar)
+# Install dependensi sistem
 RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libgl1 \
@@ -13,20 +11,18 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Salin file requirements terlebih dahulu untuk optimasi cache Docker
-COPY requirements.txt .
-
-# Perbarui pip dan setuptools agar kompatibel dengan paket lama
+# Perbarui pip
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Install semua pustaka Python
+# Install PyTorch versi stabil terlebih dahulu agar tidak error
+RUN pip install --no-cache-dir torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cpu
+
+# Install sisa pustaka dari requirements.txt
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Salin seluruh file kode (seperti main.py) ke dalam container
+# Salin seluruh kode
 COPY . .
 
-# Beri tahu Docker bahwa aplikasi ini berjalan di port 8000
-EXPOSE 8000
-
-# Perintah untuk menyalakan server FastAPI saat container berjalan
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Jalankan aplikasi dengan port dinamis Render
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT
